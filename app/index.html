@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>threejs sample2</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/85/three.min.js"></script>
+    <script src="scripts/OrbitControls.js"></script>
+    <!--<script src="scripts/ParticleClass.js"></script>-->
+    <script src="scripts/player.js"></script>
+    <script src="scripts/main.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="webgl"></div>
+<script id="vs" type="x-shader/x-vertex">
+   attribute vec3 color;
+   
+   uniform float time;
+   uniform float size;
+   
+   varying vec4 vMvPosition;
+   varying vec3 vColor;
+
+   void main() {
+      vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+      vMvPosition = mvPosition;
+      vColor = color;
+      
+      gl_PointSize = size;
+      gl_Position = projectionMatrix * mvPosition;
+   }
+</script>
+<script id="fs" type="x-shader/x-fragment">
+   uniform sampler2D texture;
+   
+   varying vec4 vMvPosition;
+   varying vec3 vColor;
+   
+   vec3 hsv2rgb(vec3 c){
+      vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+      vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+      return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+   }
+   
+   void main() {
+      vec3 custom_color = hsv2rgb(vColor);
+      float opacity = 200.0 / length(vMvPosition.xyz);
+      
+      gl_FragColor = vec4(custom_color, opacity) * texture2D(texture, gl_PointCoord);
+   }
+</script>
+</body>
+
+</html>
